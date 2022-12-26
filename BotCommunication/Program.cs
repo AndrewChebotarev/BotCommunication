@@ -26,7 +26,6 @@ namespace KolkovBot
                 cancellationToken: cts.Token
             );
 
-            hundleUpdate.StartMessageAsync(botClient, update, cts.Token);
             await ConsoleHelper();
         }
 
