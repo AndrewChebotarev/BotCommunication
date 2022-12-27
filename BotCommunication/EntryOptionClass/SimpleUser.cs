@@ -38,7 +38,7 @@
             NewText(update);
             phone = update.Message.Text;
             consoleMessage.SendingConsole(text, id);
-            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Введите сообщение для передачи администратору");
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Введите сообщение для передачи администратору.");
         }
 
         public async Task UserTransferToAdministratorAsync(Update update, long Admin)
@@ -47,7 +47,7 @@
             dateTime = DateTime.Now;
             consoleMessage.SendingConsole(text, id);
 
-            await sendMessage.SendingMessage(botClient, cancellationToken, Convert.ToInt64(Admin), $" Сообщение от {id}.\n Номер телефона {phone}. \n Дата и время отправки:{dateTime}. \n {update.Message.Text}");
+            await sendMessage.SendingMessage(botClient, cancellationToken, Convert.ToInt64(Admin), $"  Сообщение от {id}.\n Номер телефона {phone}. \n Дата и время отправки: {dateTime}. \n {update.Message.Text}");
 
             await sendMessage.SendingMessage(botClient, cancellationToken, id, "Вы отправили сообщение администратору.");
         }

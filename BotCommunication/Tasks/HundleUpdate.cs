@@ -4,9 +4,6 @@ namespace TelegramBot.Tasks
 {
     public class HundleUpdate
     {
-        private Dictionary<long, SimpleUser> userDictionary = new();
-        private Dictionary<long, Admin> adminDictionary = new();
-
         private UserTasks userTasks = new();
         private AdminTasks adminTasks = new();
         private UnauthorizedUserTasks unauthorizedUserTasks = new();

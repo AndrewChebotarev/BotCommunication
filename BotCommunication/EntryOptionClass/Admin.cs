@@ -25,7 +25,7 @@
         public async Task AdminChoiceAsync()
         {
             consoleMessage.SendingConsole(text, id);
-            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Введите пароль");
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Введите пароль.");
         }
 
         public async Task AdminPasswordAsync(Update update)
