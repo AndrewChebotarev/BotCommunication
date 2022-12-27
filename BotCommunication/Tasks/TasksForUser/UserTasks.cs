@@ -5,43 +5,43 @@ namespace BotCommunication.Tasks.TasksForUser
     public class UserTasks
     {
         public List<long> authorizationUserCheckList = new();
-        private Dictionary<long, SimpleUser> simpleUserDictionary = new();
+        private Dictionary<long, SimpleUser> UserDictionary = new();
         public async Task StandardUserChoiceHundleAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
             SimpleUser simpleUser = new(botClient, update, cancellationToken);
 
             ExamSimpleUserDictionary(simpleUser.id);
-            simpleUserDictionary.Add(update.Message.Chat.Id, simpleUser);
+            UserDictionary.Add(update.Message.Chat.Id, simpleUser);
 
             await simpleUser.StandardUserChoiceAsync();
         }
         private void ExamSimpleUserDictionary(long id)
         {
-            if (simpleUserDictionary.ContainsKey(id))
-                simpleUserDictionary.Remove(id);
+            if (UserDictionary.ContainsKey(id))
+                UserDictionary.Remove(id);
         }
 
-        public async Task EnterPhoneNumberHundleAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task EnterPhoneNumberHundleAsync(Update update)
         {
             if (ExamSimpleUserNotDictionary(update.Message.Chat.Id))
                 return;
 
             authorizationUserCheckList.Add(update.Message.Chat.Id);
 
-            await simpleUserDictionary[update.Message.Chat.Id].EnterPhoneNumberAsync(update);
+            await UserDictionary[update.Message.Chat.Id].EnterPhoneNumberAsync(update);
         }
         private bool ExamSimpleUserNotDictionary(long id)
         {
-            if (simpleUserDictionary.ContainsKey(id))
+            if (UserDictionary.ContainsKey(id))
                 return false;
 
             else
                 return true;
         }
 
-        public async Task UserTransferToAdministratorHundleAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken, List<string> admins)
+        public async Task UserTransferToAdministratorHundleAsync(Update update, long Admin)
         {
-            await simpleUserDictionary[update.Message.Chat.Id].UserTransferToAdministratorAsync(update, admins);
+            await UserDictionary[update.Message.Chat.Id].UserTransferToAdministratorAsync(update, Admin);
         }
     }
 }

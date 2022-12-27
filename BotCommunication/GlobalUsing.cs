@@ -6,3 +6,8 @@ global using Telegram.Bot.Types;
 global using Telegram.Bot.Types.Enums;
 global using TelegramBot.Tasks;
 global using BotCommunication.EntryOptionClass.TasksMessage;
+global using BotCommunication.Tasks.TasksForUnauthorizedUser;
+global using BotCommunication.EntryOptionClass;
+global using BotCommunication.Tasks;
+global using BotCommunication.Tasks.TasksForAdmin;
+global using BotCommunication.Tasks.TasksForUser;

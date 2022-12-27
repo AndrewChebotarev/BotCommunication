@@ -1,8 +1,4 @@
-﻿using BotCommunication.EntryOptionClass.TasksMessage;
-using Telegram.Bot;
-using Telegram.Bot.Types;
-
-namespace BotCommunication.EntryOptionClass
+﻿namespace BotCommunication.EntryOptionClass
 {
     public class SimpleUser
     {
@@ -45,21 +41,17 @@ namespace BotCommunication.EntryOptionClass
             await sendMessage.SendingMessage(botClient, cancellationToken, id, "Введите сообщение для передачи администратору");
         }
 
-        public async Task UserTransferToAdministratorAsync(Update update, List<string> admins)
+        public async Task UserTransferToAdministratorAsync(Update update, long Admin)
         {
             NewText(update);
             dateTime = DateTime.Now;
             consoleMessage.SendingConsole(text, id);
 
-            foreach (var admin in admins)
-                await sendMessage.SendingMessage(botClient, cancellationToken, Convert.ToInt64(admin), $" Сообщение от {id}.\n Номер телефона {phone}. \n Дата и время отправки:{dateTime}. \n {update.Message.Text}");
+            await sendMessage.SendingMessage(botClient, cancellationToken, Convert.ToInt64(Admin), $" Сообщение от {id}.\n Номер телефона {phone}. \n Дата и время отправки:{dateTime}. \n {update.Message.Text}");
 
             await sendMessage.SendingMessage(botClient, cancellationToken, id, "Вы отправили сообщение администратору.");
         }
 
-        private void NewText(Update update)
-        {
-            text = update.Message.Text;
-        }
+        private void NewText(Update update) => text = update.Message.Text;
     }
 }

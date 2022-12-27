@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using Telegram.Bot.Types;
-
-namespace KolkovBot
+﻿namespace KolkovBot
 {
     class Program
     {

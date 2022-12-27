@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-namespace BotCommunication.EntryOptionClass
+﻿namespace BotCommunication.EntryOptionClass
 {
     public class Admin
     {
@@ -41,7 +39,7 @@ namespace BotCommunication.EntryOptionClass
         {
             NewText(update);
             consoleMessage.SendingConsole(text, id);
-            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Неправильный пароль, ведите заново. Выберите, способ общения. Введите \"обычный пользователь\" или \"администратор\". Если вам нужно будет выйти из бота введите \"/stop\".");
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Неправильный пароль, ведите заново. Если вам нужно будет выйти из бота введите \"/stop\".");
         }
 
         public async Task AdminMessageIdErrorAsync(Update update)
@@ -51,16 +49,35 @@ namespace BotCommunication.EntryOptionClass
             await sendMessage.SendingMessage(botClient, cancellationToken, id, "Несуществующий пользователь! Введите id заново.");
         }
 
-        public async Task AdminMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        public async Task AdminMessageIdAsync(Update update)
         {
             NewText(update);
             consoleMessage.SendingConsole(text, id);
             await sendMessage.SendingMessage(botClient, cancellationToken, id, "Отправте сообщение пользователю.");
         }
 
-        private void NewText(Update update)
+        public async Task AdminTransferToUserAsync(Update update, Dictionary<long, long> AdminTransferUser)
         {
-            text = update.Message.Text;
+            NewText(update);
+            consoleMessage.SendingConsole(text, id);
+            await sendMessage.SendingMessage(botClient, cancellationToken, Convert.ToInt64(AdminTransferUser[update.Message.Chat.Id]), $" Администратор отправил вам сообщение. \n {update.Message.Text}");
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, " Вы отправили сообщение. Введите id для следующего сообщения.");
         }
+
+        public async Task EnterChangePasswordAsync(Update update)
+        {
+            NewText(update);
+            consoleMessage.SendingConsole(text, id);
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, " Введите новый пароль.");
+        }
+
+        public async Task ResultChangePasswordAsync(Update update)
+        {
+            NewText(update);
+            consoleMessage.SendingConsole(text, id);
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, " Пароль успешно изменен.");
+        }
+
+        private void NewText(Update update) => text = update.Message.Text;
     }
 }
