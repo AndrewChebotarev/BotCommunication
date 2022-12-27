@@ -134,12 +134,15 @@ namespace TelegramBot.Tasks
                                 return;
                             }
 
-                            if (AdminForChangePassword[update.Message.Chat.Id] == true)
+                            if (AdminForChangePassword.Count != 0)
                             {
-                                password = update.Message.Text;
-                                AdminForChangePassword.Remove(update.Message.Chat.Id);
-                                await adminTasks.ResultChangePasswordHundleAsync(update);
-                                return;
+                                if (AdminForChangePassword[update.Message.Chat.Id] == true)
+                                {
+                                    password = update.Message.Text;
+                                    AdminForChangePassword.Remove(update.Message.Chat.Id);
+                                    await adminTasks.ResultChangePasswordHundleAsync(update);
+                                    return;
+                                }
                             }
 
                             if (UserList.Contains(Convert.ToInt64(update.Message.Text)))
