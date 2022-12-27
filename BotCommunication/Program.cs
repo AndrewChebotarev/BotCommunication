@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using Telegram.Bot.Types;
-
-namespace KolkovBot
+﻿namespace KolkovBot
 {
     class Program
     {
@@ -26,7 +23,6 @@ namespace KolkovBot
                 cancellationToken: cts.Token
             );
 
-            hundleUpdate.StartMessageAsync(botClient, update, cts.Token);
             await ConsoleHelper();
         }
 

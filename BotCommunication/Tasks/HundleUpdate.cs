@@ -1,355 +1,184 @@
-﻿using Telegram.Bot.Types;
+﻿using System.Net;
 
 namespace TelegramBot.Tasks
 {
     public class HundleUpdate
     {
-        private List<string> users = new();
-        private List<string> admins = new();
-        private Dictionary<string, string> AdminUser = new();
-        private Dictionary<string, string> User2 = new();
+        private UserTasks userTasks = new();
+        private AdminTasks adminTasks = new();
+        private UnauthorizedUserTasks unauthorizedUserTasks = new();
+        private HundleCheckingMessage hundleCheckingMessage = new();
 
-        private string password = "1234";
-        private bool passwordMessageExam = false;
-        private bool exam = false;
+        private List<long> UnauthorizedUserList = new();
+        private List<long> UserList = new();
+        private List<string> MessagesForCommand = new() { "Обычный пользователь", "обычный пользователь", "Администратор", "администратор", "/start", "/stop", "Смена пароля", "смена пароля" };
+
+        private Dictionary<long, bool> AdminDictionary = new();
+        private Dictionary<long, long> AdminTransferUser = new();
+        private Dictionary<long, bool> AdminForChangePassword = new();
+
+        private string password = "a12345z";
+
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            var userExam = users.Contains(chatId.ToString());
-
-            var adminExam = admins.Contains(chatId.ToString());
-
-            if (exam)
+            try
             {
-                AdminMessageToUserAsync(botClient, update, cancellationToken);
-                exam = false;
-                return;
-            }
+                var checkingForMessage = hundleCheckingMessage.CheckingForMessage(update);
 
-            if (userExam)
-            {
-                if (message.Text == "/stop")
+                if (!checkingForMessage)
                 {
-                    await StopMessageAsync(botClient, update, cancellationToken);
+                    return;
                 }
 
-                await UserMessageAsync(botClient, update, cancellationToken);
-            }
-
-            if (adminExam)
-            {
-                if (message.Text == "/stop")
+                if (update.Message.Text == MessagesForCommand[4])
                 {
-                    await StopMessageAsync(botClient, update, cancellationToken);
+                    UnauthorizedUserList.Add(update.Message.Chat.Id);
+                    await unauthorizedUserTasks.StartHundleAsync(botClient, update, cancellationToken);
+                    return;
                 }
 
-                else if (users.Contains(message.Text))
+                if (!UnauthorizedUserList.Contains(update.Message.Chat.Id) && !UserList.Contains(update.Message.Chat.Id) && !AdminDictionary.ContainsKey(update.Message.Chat.Id))
                 {
-                    await AdminMessageAsync(botClient, update, cancellationToken);
+                    UnauthorizedUserList.Add(update.Message.Chat.Id);
+                    await unauthorizedUserTasks.StartHundleAsync(botClient, update, cancellationToken);
+                    return;
                 }
 
-                else
+                if (UnauthorizedUserList.Contains(update.Message.Chat.Id))
                 {
-                    await AdminErrorMessageAsync(botClient, update, cancellationToken);
-                }
-            }
-
-            if (userExam == false && adminExam == false)
-            {
-                if (message.Text == "/start")
-                {
-                    await StartMessageAsync(botClient, update, cancellationToken);
-                }
-
-                else if (message.Text == "обычный пользователь")
-                {
-                    await ExamNumberPhoneAsync(botClient, update, cancellationToken);
-                }
-
-                else if ((messageText.StartsWith('+') || messageText.StartsWith('8')) && (messageText.Length == 11 || messageText.Length == 12))
-                {
-                    await RegularUserMessageAsync(botClient, update, cancellationToken);
-                }
-
-                else if (message.Text == "администратор")
-                {
-                    await RegularAdminMessageAsync(botClient, update, cancellationToken);
-                }
-
-                else if (passwordMessageExam)
-                {
-                    if (message.Text == password)
+                    if (update.Message.Text == MessagesForCommand[0] || update.Message.Text == MessagesForCommand[1])
                     {
-                        await AdminPasswordAsync(botClient, update, cancellationToken);
+                        await userTasks.StandardUserChoiceHundleAsync(botClient, update, cancellationToken);
+                        return;
                     }
 
-                    else
+                    if ((update.Message.Text.StartsWith('+') || update.Message.Text.StartsWith('8')) && (update.Message.Text.Length == 11 || update.Message.Text.Length == 12))
                     {
-                        await AdminPasswordErrorAsync(botClient, update, cancellationToken);
+                        UnauthorizedUserList.Remove(update.Message.Chat.Id);
+                        UserList.Add(update.Message.Chat.Id);
+                        await userTasks.EnterPhoneNumberHundleAsync(update);
+                        return;
                     }
 
-                    passwordMessageExam = false;
+                    if (update.Message.Text == MessagesForCommand[2] || update.Message.Text == MessagesForCommand[3])
+                    {
+                        UnauthorizedUserList.Remove(update.Message.Chat.Id);
+                        AdminDictionary.Add(update.Message.Chat.Id, false);
+                        await adminTasks.AdminChoiceHundleAsync(botClient, update, cancellationToken);
+                        return;
+                    }
+
+                    if (!MessagesForCommand.Contains(update.Message.Text))
+                    {
+                        await unauthorizedUserTasks.RepeatHundleAsync(update);
+                        return;
+                    }
+
+                    if (update.Message.Text == MessagesForCommand[4] || update.Message.Text == MessagesForCommand[5])
+                    {
+                        StopCommandHundle(botClient, update, cancellationToken);
+                        return;
+                    }
                 }
 
-                else
+                if (UserList.Contains(update.Message.Chat.Id))
                 {
-                    await StartMessageRepeatAsync(botClient, update, cancellationToken);
+                    if (update.Message.Text == MessagesForCommand[4] || update.Message.Text == MessagesForCommand[5])
+                    {
+                        StopCommandHundle(botClient, update, cancellationToken);
+                        return;
+                    }
+
+                    foreach (var Admin in AdminDictionary)
+                    {
+                        await userTasks.UserTransferToAdministratorHundleAsync(update, Admin.Key);
+                    }
+                }
+
+                if (AdminDictionary.ContainsKey(update.Message.Chat.Id))
+                {
+                    if (update.Message.Text == MessagesForCommand[4] || update.Message.Text == MessagesForCommand[5])
+                    {
+                        StopCommandHundle(botClient, update, cancellationToken);
+                        return;
+                    }
+
+                    if (AdminDictionary[update.Message.Chat.Id] == false && update.Message.Text == password)
+                    {
+                        AdminDictionary[update.Message.Chat.Id] = true;
+                        await adminTasks.AdminPasswordHundleAsync(update);
+                        return;
+                    }
+
+                    if (AdminDictionary[update.Message.Chat.Id] == false && update.Message.Text != password)
+                    {
+                        await adminTasks.AdminPasswordErrorHundleAsync(update);
+                        return;
+                    }
+
+                    if (AdminTransferUser.ContainsKey(update.Message.Chat.Id))
+                    {
+                        await adminTasks.AdminTransferToUserHundleAsync(update, AdminTransferUser);
+                        AdminTransferUser.Remove(update.Message.Chat.Id);
+                        return;
+                    }
+
+                    if (AdminDictionary[update.Message.Chat.Id] == true)
+                    {
+                        try
+                        {
+                            if (update.Message.Text == MessagesForCommand[6] || update.Message.Text == MessagesForCommand[7])
+                            {
+                                await adminTasks.EnterChangePasswordHundleAsync(update);
+                                AdminForChangePassword.Add(update.Message.Chat.Id, true);
+                                return;
+                            }
+
+                            if (AdminForChangePassword[update.Message.Chat.Id] == true)
+                            {
+                                password = update.Message.Text;
+                                AdminForChangePassword.Remove(update.Message.Chat.Id);
+                                await adminTasks.ResultChangePasswordHundleAsync(update);
+                                return;
+                            }
+
+                            if (UserList.Contains(Convert.ToInt64(update.Message.Text)))
+                            {
+                                AdminTransferUser.Add(update.Message.Chat.Id, Convert.ToInt64(update.Message.Text));
+                                await adminTasks.AdminMessageIdHundleAsync(update);
+                                return;
+                            }
+
+                            if (!UserList.Contains(Convert.ToInt64(update.Message.Text)))
+                            {
+                                await adminTasks.AdminMessageIdErrorHundleAsync(update);
+                                return;
+                            }
+                        }
+                        catch
+                        {
+                            await adminTasks.AdminMessageIdErrorHundleAsync(update);
+                            return;
+                        }
+                    }
                 }
             }
-        }
 
-        public async Task StartMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Выберите, способ общения. Введите \"обычный пользователь\" или \"администратор\". Если вам нужно будет выйти из бота введите \"/stop\".",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task StartMessageRepeatAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Бот не понял вашего сообщения. Выберите, способ общения. Введите \"обычный пользователь\" или \"администратор\")",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task RegularUserMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            User2.Add(chatId.ToString(), messageText);
-
-            users.Add(chatId.ToString());
-
-            Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
-
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Введите сообщение для передачи администратору",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task RegularAdminMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
-
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Введите пароль",
-                cancellationToken: cancellationToken);
-
-            passwordMessageExam = true;
-        }
-
-        public async Task AdminPasswordAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            admins.Add(chatId.ToString());
-
-            Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
-
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Вы зашли как администратор. Для отправки сообщения обычному пользователю, введите его id.",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task AdminPasswordErrorAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
-
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Неправильный пароль, ведите заново. Выберите, способ общения. Введите \"обычный пользователь\" или \"администратор\". Если вам нужно будет выйти из бота введите \"/stop\".",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task StopMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            var userExam = users.Contains(chatId.ToString());
-
-            if (userExam)
+            catch
             {
-                users.Remove(chatId.ToString());
+                Console.WriteLine("Ошибка!");
+                return;
             }
-
-            var adminExam = admins.Contains(chatId.ToString());
-
-            if (adminExam)
-            {
-                admins.Remove(chatId.ToString());
-            }
-
-            Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
-
-            Message sentMessage = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Вы вышли из телеграмм бота.",
-                cancellationToken: cancellationToken);
         }
 
-        public async Task UserMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        private async void StopCommandHundle(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            DateTime dateTime = DateTime.Now;
-
-            var myValue = User2[chatId.ToString()];
-
-            foreach (var admin in admins)
-            {
-                Message sentMessage = await botClient.SendTextMessageAsync(
-                    chatId: admin,
-                    text: $" Сообщение от {chatId}.\n Номер телефона {myValue}. \n Дата и время отправки:{dateTime}. \n {message.Text}",
-                    cancellationToken: cancellationToken); ;
-            }
-
-            Message sentMessage1 = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Вы отправили сообщение администратору.",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task AdminMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            Message sentMessage1 = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Отправте сообщение пользователю.",
-                cancellationToken: cancellationToken);
-
-            AdminUser.Add(chatId.ToString(), message.Text);
-
-            exam = true;
-        }
-
-        public async Task AdminErrorMessageAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            Message sentMessage1 = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: "Несуществующий пользователь! Введите id заново.",
-                cancellationToken: cancellationToken);
-        }
-
-        public async Task AdminMessageToUserAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            if (update.Message is not { } message)
-                return;
-
-            if (message.Text is not { } messageText)
-                return;
-
-            var chatId = message.Chat.Id;
-
-            var t = AdminUser[chatId.ToString()];
-
-            Message sentMessage1 = await botClient.SendTextMessageAsync(
-                chatId: t,
-                text: $" Администратор отправил вам сообщение. \n {messageText}",
-                cancellationToken: cancellationToken);
-
-            Message sentMessage2 = await botClient.SendTextMessageAsync(
-                chatId: chatId,
-                text: $" Вы отправили сообщение. Введите id для следующего сообщения.",
-                cancellationToken: cancellationToken);
-
-            AdminUser.Remove(chatId.ToString());
-        }
-
-        public async Task ExamNumberPhoneAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
-        {
-            {
-                if (update.Message is not { } message)
-                    return;
-
-                if (message.Text is not { } messageText)
-                    return;
-
-                var chatId = message.Chat.Id;
-
-                Console.WriteLine($"Received a '{messageText}' message in chat {chatId}.");
-
-                Message sentMessage = await botClient.SendTextMessageAsync(
-                    chatId: chatId,
-                    text: "Введите номер телефона.",
-                    cancellationToken: cancellationToken);
-            }
+            UnauthorizedUserList.Remove(update.Message.Chat.Id);
+            UserList.Remove(update.Message.Chat.Id);
+            AdminDictionary.Remove(update.Message.Chat.Id);
+            await unauthorizedUserTasks.StopMessageHundleAsync(update);
+            await unauthorizedUserTasks.StartHundleAsync(botClient, update, cancellationToken);
+            UnauthorizedUserList.Add(update.Message.Chat.Id);
         }
     }
 }
