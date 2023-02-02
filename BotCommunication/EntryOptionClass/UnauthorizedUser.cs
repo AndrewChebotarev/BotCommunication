@@ -44,6 +44,13 @@
             await sendMessage.SendingMessage(botClient, cancellationToken, update.Message.Chat.Id, "Вы очистили бота. Сделайте вход.");
         }
 
+        public async Task BlackList(Update update)
+        {
+            NewText(update);
+            consoleMessage.SendingConsole(text, id);
+            await sendMessage.SendingMessage(botClient, cancellationToken, update.Message.Chat.Id, "Вы в черном списке.");
+        }
+
         private void NewText(Update update) => text = update.Message.Text;
     }
 }

@@ -51,6 +51,35 @@
 
             await sendMessage.SendingMessage(botClient, cancellationToken, id, "Вы отправили сообщение администратору.");
         }
+        public async Task UserTransferToButNoAdministratorAsync(Update update)
+        {
+            NewText(update);
+            consoleMessage.SendingConsole(text, id);
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, "На данный момент администратор отсутствует. Введите сообщение позже. Если хотите сбросить запрос, введите /stop.");
+        }
+
+        public async Task UserTransferToAssistantAsync(Update update, long Assistant)
+        {
+            NewText(update);
+            dateTime = DateTime.Now;
+            consoleMessage.SendingConsole(text, id);
+
+            await sendMessage.SendingMessage(botClient, cancellationToken, Convert.ToInt64(Assistant), $"  Сообщение от {id}. \n Дата и время отправки: {dateTime}. \n {update.Message.Text}");
+        }
+
+        public async Task BecomeAssistantAsync(Update update)
+        {
+            NewText(update);
+            consoleMessage.SendingConsole(text, id);
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Вы отправили запрос администратору, ждите ответа. Если хотите сбросить запрос, введите /stop.");
+        }
+
+        public async Task BecomeAssistantWaitingAsync(Update update)
+        {
+            NewText(update);
+            consoleMessage.SendingConsole(text, id);
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, "Ваш запрос на роль помощника рассматривается. Если хотите сбросить запрос, введите /stop.");
+        }
 
         private void NewText(Update update) => text = update.Message.Text;
     }

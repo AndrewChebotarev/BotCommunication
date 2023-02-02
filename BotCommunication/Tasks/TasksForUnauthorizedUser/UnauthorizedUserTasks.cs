@@ -36,5 +36,8 @@
 
         public async Task StopMessageHundleAsync(Update update) =>
             await unauthorizedUserDictionary[update.Message.Chat.Id].StopAsync(update);
+
+        public async Task BlackListHundleAsync(Update update) =>
+             await unauthorizedUserDictionary[update.Message.Chat.Id].BlackList(update);
     }
 }

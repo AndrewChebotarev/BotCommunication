@@ -11,3 +11,4 @@ global using BotCommunication.EntryOptionClass;
 global using BotCommunication.Tasks;
 global using BotCommunication.Tasks.TasksForAdmin;
 global using BotCommunication.Tasks.TasksForUser;
+global using BotCommunication.Tasks.TasksForAssistant;

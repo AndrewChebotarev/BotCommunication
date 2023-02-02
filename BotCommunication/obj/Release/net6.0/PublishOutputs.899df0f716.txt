@@ -1,0 +1,7 @@
+D:\Bot\BotCommunication\publish\BotCommunication.exe
+D:\Bot\BotCommunication\publish\BotCommunication.dll
+D:\Bot\BotCommunication\publish\BotCommunication.deps.json
+D:\Bot\BotCommunication\publish\BotCommunication.runtimeconfig.json
+D:\Bot\BotCommunication\publish\BotCommunication.pdb
+D:\Bot\BotCommunication\publish\Newtonsoft.Json.dll
+D:\Bot\BotCommunication\publish\Telegram.Bot.dll
