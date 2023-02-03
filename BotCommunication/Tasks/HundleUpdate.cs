@@ -53,14 +53,9 @@
 
             try
             {
-                if (update.Message.Text == MessagesForCommand[4])
-                {
-                    UnauthorizedUserList.Add(update.Message.Chat.Id);
-                    await unauthorizedUserTasks.StartHundleAsync(botClient, update, cancellationToken);
-                    return;
-                }
-
-                if (!UnauthorizedUserList.Contains(update.Message.Chat.Id) && !UserList.Contains(update.Message.Chat.Id) && !AdminDictionary.ContainsKey(update.Message.Chat.Id) && !UserForAssistant.ContainsKey(update.Message.Chat.Id) && !AssistantList.Contains(update.Message.Chat.Id))
+                if (update.Message.Text == MessagesForCommand[4] && !UnauthorizedUserList.Contains(update.Message.Chat.Id) &&
+                    !UserList.Contains(update.Message.Chat.Id) && !AdminDictionary.ContainsKey(update.Message.Chat.Id)
+                    && !UserForAssistant.ContainsKey(update.Message.Chat.Id) && !AssistantList.Contains(update.Message.Chat.Id))
                 {
                     UnauthorizedUserList.Add(update.Message.Chat.Id);
                     await unauthorizedUserTasks.StartHundleAsync(botClient, update, cancellationToken);
@@ -116,7 +111,7 @@
             {
                 if (UserList.Contains(update.Message.Chat.Id))
                 {
-                    if (update.Message.Text == MessagesForCommand[4] || update.Message.Text == MessagesForCommand[5])
+                    if (update.Message.Text == MessagesForCommand[5])
                     {
                         StopCommandHundle(botClient, update, cancellationToken);
                         return;
@@ -174,7 +169,7 @@
             {
                 if (AdminDictionary.ContainsKey(update.Message.Chat.Id))
                 {
-                    if (update.Message.Text == MessagesForCommand[4] || update.Message.Text == MessagesForCommand[5])
+                    if (update.Message.Text == MessagesForCommand[5])
                     {
                         StopCommandHundle(botClient, update, cancellationToken);
                         return;
@@ -468,7 +463,7 @@
             {
                 if (AssistantList.Contains(update.Message.Chat.Id))
                 {
-                    if (update.Message.Text == MessagesForCommand[4] || update.Message.Text == MessagesForCommand[5])
+                    if (update.Message.Text == MessagesForCommand[5])
                     {
                         StopCommandHundle(botClient, update, cancellationToken);
                         return;
@@ -523,10 +518,19 @@
             UnauthorizedUserList.Remove(update.Message.Chat.Id);
             UserList.Remove(update.Message.Chat.Id);
             AdminDictionary.Remove(update.Message.Chat.Id);
+            AssistantList.Remove(update.Message.Chat.Id);
+            AdminTransferUser.Remove(update.Message.Chat.Id);
+            AdminForChangePassword.Remove(update.Message.Chat.Id);
+            UserForAssistant.Remove(update.Message.Chat.Id);
+            AdminAddAssistant.Remove(update.Message.Chat.Id);
+            AdminDeleteAssistant.Remove(update.Message.Chat.Id);
+            AdminAddToBlackList.Remove(update.Message.Chat.Id);
+            AdminAddToWhiteList.Remove(update.Message.Chat.Id);
+            AdminAllUserListSend.Remove(update.Message.Chat.Id);
+            AssistantTransferUser.Remove(update.Message.Chat.Id);
             await unauthorizedUserTasks.StopMessageHundleAsync(update);
             await unauthorizedUserTasks.StartHundleAsync(botClient, update, cancellationToken);
             UnauthorizedUserList.Add(update.Message.Chat.Id);
         }
     }
 }
-
