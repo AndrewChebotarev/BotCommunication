@@ -131,7 +131,7 @@
             NewText(update);
             consoleMessage.SendingConsole(text, id);
             await sendMessage.SendingMessage(botClient, cancellationToken, Convert.ToInt64(update.Message.Text), $" Администратор добавил вас в черный список.");
-            await sendMessage.SendingMessage(botClient, cancellationToken, id, " Данный пользователь в черном списке. Если хотите убрать его из черного списка введите команду \"Бедый список\". Введите id пользователя для передачи сообщения.");
+            await sendMessage.SendingMessage(botClient, cancellationToken, id, " Данный пользователь в черном списке. Если хотите убрать его из черного списка введите команду \"Белый список\". Введите id пользователя для передачи сообщения.");
         }
         public async Task ErrorBlackListAddAsync(Update update)
         {
